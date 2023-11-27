@@ -19,6 +19,7 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
+            
             LiveRadioTab()
                 .tabItem {
                     Image(systemName: "music.note.list")
@@ -28,6 +29,8 @@ struct ContentView: View {
 //                        }
                         // this does not appear to do anything.
                     // TODO - how do I animate these?
+//                        .foregroundColor(Color(red: 1, green: 0.0, blue: 0.82, opacity: 1.0))
+                    
                     Text("Jazz Radio")
                 }
                
@@ -35,12 +38,14 @@ struct ContentView: View {
             JazzEventsTab()
                 .tabItem {
                     Image(systemName: "music.mic")
+//                        .foregroundColor(Color(red: 0.15, green: 0.0, blue: 0.82, opacity: 1.0))
                     Text("Live Music Scene")
                 }
             
             SupportTab ()
                 .tabItem {
                     Image(systemName: "radio")
+//                        .foregroundColor(Color(red: 0.15, green: 0.62, blue: 0.82, opacity: 1.0))
                     Text("Support KJZZ")
                 }
         }
@@ -49,38 +54,56 @@ struct ContentView: View {
 
 struct LiveRadioTab: View {
     
-    // TODO - music plays when navigating to other tabs, but stops when user returns to Live Radio tab.
-    
     @State private var isPlaying = false
+//    print("struct declared")
     
     var body: some View {
         VStack {
-            Text("Jazz PHX")
-                .font(.title)
-                .padding()
-            
-            
+//            Text("Jazz PHX")
+//                .font(.title)
+//                .padding()
+//            
+            HStack {
+                Spacer()
+                    .frame(width: 40)
+                Image("KJZZ_HD2")
+                    .resizable()
+                    .scaledToFit()
+                Image("JazzPHX")
+                    .resizable()
+                    .scaledToFit()
+                Spacer()
+                    .frame(width: 40)
+            }
             Button(action: {
                 self.isPlaying.toggle()
                 
-                print(isPlaying)
+//                print("Button Action")
             }) {
                 Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 100))
-                    .foregroundColor(isPlaying ? .red : .blue)
+//                    .foregroundColor(isPlaying ? .red : .blue)
+                    .foregroundColor(Color(red: 0.15, green: 0.62, blue: 0.82, opacity: 1.0))
                 // TODO - should be able to animate the play button too
             }
             .padding()
+            .symbolEffect(.bounce, value: isPlaying)
         }
         .onAppear {
-            setupStreamPlayer()
+//            print("onAppear")
+//            print("Checking rate \(String(describing: streamPlayer?.rate))")
+            if (streamPlayer?.rate == nil || streamPlayer?.rate == 0.0) {
+//                print("rate check is true")
+                setupStreamPlayer()
+                // setup used to be called outside of this IF which resulted in setup being called every time user returned to this tab, which would stop an already-playing stream
+            }
         }
         .onChange(of: isPlaying) {
             if isPlaying {
-//                print("Play")
+//                print("Play change")
                 streamPlayer?.play()
             } else {
-//                print("Stop")
+//                print("Stop change")
                 streamPlayer?.pause()
             }
         }
@@ -90,7 +113,8 @@ struct LiveRadioTab: View {
         do {
             try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback)
             streamPlayer = AVPlayer(url: jazzStreamURL)
-        } catch { 
+//            print("setup called")
+        } catch {
             print("Error setting up audio session")
         }
     }

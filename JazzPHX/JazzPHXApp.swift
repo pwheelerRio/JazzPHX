@@ -13,6 +13,8 @@ struct JazzPHXApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+//                .accentColor(.red)
+            // this did not appear to influence app colors.
         }
     }
 }
