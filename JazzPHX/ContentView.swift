@@ -48,61 +48,92 @@ struct ContentView: View {
 //    @State private var iconAnimate = false
     
     var body: some View {
-        ZStack {
-            TabView {
-                LiveRadioTab()
-                    .tag(0)
-                    .tabItem {
-                        Image(systemName: "music.note.list")
-                        //                        .symbolEffect(.bounce, value: iconAnimate  )
-                        //                        .onTapGesture {
-                        //                            iconAnimate.toggle()
-                        //                        }
-                        // this does not appear to do anything.
-                        // TODO - how do I animate these?
-                        //                        .foregroundColor(Color(red: 1, green: 0.0, blue: 0.82, opacity: 1.0))
-                        Text("Jazz Radio")
-                    }
-                    .onAppear(perform: {
-                        selectedTabIndex = 0
-                        print(selectedTabIndex)
-                    })
-                
-                JazzEventsTab()
-                    .tag(1)
-                    .tabItem {
-                        Image(systemName: "music.mic")
-                        Text("Live Music Scene")
-                    }
-                    .onAppear(perform: {
-                        selectedTabIndex = 1
-                        print(selectedTabIndex)
-                    })
-                
-                SupportTab ()
-                    .tag(2)
-                    .tabItem {
-                        Image(systemName: "radio")
-                        Text("Support KJZZ")
-                    }
-                    .onAppear(perform: {
-                        selectedTabIndex = 2
-                        print(selectedTabIndex)
-                    })
-            }
-            .environmentObject(ourPlayerManager)
-            // needs to be here to be accessible to all of the children of the TabView.
-            
-            PlayPauseButton()
+        GeometryReader { geometry in
+            ZStack {
+                TabView {
+                    LiveRadioTab()
+                        .tag(0)
+                        .tabItem {
+                            Image(systemName: "music.note.list")
+                            //                        .symbolEffect(.bounce, value: iconAnimate  )
+                            //                        .onTapGesture {
+                            //                            iconAnimate.toggle()
+                            //                        }
+                            // this does not appear to do anything.
+                            // TODO - how do I animate these?
+                            //                        .foregroundColor(Color(red: 1, green: 0.0, blue: 0.82, opacity: 1.0))
+                            Text("Jazz Radio")
+                        }
+                        .onAppear(perform: {
+                            selectedTabIndex = 0
+                            print(selectedTabIndex)
+                        })
+                    
+                    JazzEventsTab()
+                        .tag(1)
+                        .tabItem {
+                            Image(systemName: "music.mic")
+                            Text("Live Music Scene")
+                        }
+                        .onAppear(perform: {
+                            selectedTabIndex = 1
+                            print(selectedTabIndex)
+                        })
+                    
+                    SupportTab ()
+                        .tag(2)
+                        .tabItem {
+                            Image(systemName: "radio")
+                            Text("Support KJZZ")
+                        }
+                        .onAppear(perform: {
+                            selectedTabIndex = 2
+                            print(selectedTabIndex)
+                        })
+                }
                 .environmentObject(ourPlayerManager)
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .offset(x: selectedTabIndex == 1 ? -100 : (selectedTabIndex == 2 ? 130 : 0), y: selectedTabIndex == 0 ? -210 : -40)
-                .animation(.easeInOut, value: selectedTabIndex)
-            // This is a demonstration of movement and animation in response to tabIndex.
+                // needs to be here to be accessible to all of the children of the TabView.
+                
+                LogosView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .scaleEffect(selectedTabIndex == 0 ? 1.0 : 0.7) // Scale effect
+                    .offset(x:0, y: selectedTabIndex == 0 ? 0 : -130)
+                    .animation(.easeInOut, value: selectedTabIndex ) // Animation type
+                
+                NowPlayingBar()
+                    .offset(x: 0, y: selectedTabIndex == 0 ? 0 : 245)
+                    .animation(.easeInOut, value: selectedTabIndex)
+                
+                PlayPauseButton()
+                    .environmentObject(ourPlayerManager)
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .offset(x: selectedTabIndex == 0 ? 0 : 120, y: selectedTabIndex == 0 ? -160 : -60)
+                    .animation(.easeInOut, value: selectedTabIndex)
+                // This is a demonstration of movement and animation in response to tabIndex.
+                
+            }
+            .onAppear {
+                ourPlayerManager.setupPlayer()
+            }
         }
-        .onAppear {
-            ourPlayerManager.setupPlayer()
+    }
+}
+
+struct LogosView: View {
+    var body: some View {
+        HStack {
+            Spacer()
+                .frame(width: 40)
+            Image("KJZZ_HD2")
+                .resizable()
+                .scaledToFit()
+                .alignmentGuide(.top) { d in d[VerticalAlignment.top] }
+            Image("JazzPHX")
+                .resizable()
+                .scaledToFit()
+            Spacer()
+                .frame(width: 40)
         }
     }
 }
@@ -123,43 +154,48 @@ struct PlayPauseButton: View {
     }
 }
 
+struct NowPlayingBar: View {
+    var body: some View {
+        VStack {
+            HStack {
+                Text("Now Playing Information")
+                    .foregroundColor(.white)
+                    .padding()
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color(red: 0.1, green: 0.1, blue: 0.12, opacity: 1.0))
+    }
+}
+
 struct LiveRadioTab: View {
     @EnvironmentObject var ourPlayerManager: PlayerManager
     @State private var isListening = false
     
     var body: some View {
-            GeometryReader { geometry in
-                VStack {
-                    HStack {
-                        Spacer()
-                            .frame(width: 40)
-                        Image("KJZZ_HD2")
-                            .resizable()
-                            .scaledToFit()
-                        Image("JazzPHX")
-                            .resizable()
-                            .scaledToFit()
-                        Spacer()
-                            .frame(width: 40)
-                    }
-                    
-                    Text("This is only placeholder text meant to represent the Teaser information from the website promoting upcoming programming content, and/or Now Playing Information/Artwork. Moving forward, the logos and play button will be pulled out of zSpace and floated 'above' this content.")
-                        .font(.title)
-                        .padding()
-                        .frame(maxHeight: geometry.size.height / 4) // Set maximum height
-                    
-                    Spacer() // Spacer to push content to the top
-                    
-                    Text("Listen Now!")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-                        .padding(.bottom, 320) // Add bottom padding
-                        .scaleEffect(ourPlayerManager.isPlaying ? 0.0 : 1.0) // Scale effect
-                        .animation(.easeInOut, value: ourPlayerManager.isPlaying ) // Animation type
-                }
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+                    .frame(height: 140)
+                
+                Text("This is only placeholder text meant to represent the Teaser information from the website promoting upcoming programming content, and/or Now Playing Information/Artwork.")
+                    .font(.title)
+                    .padding()
+                    .background(Color.init(hue: 0.6, saturation: 0.1, brightness: 0.96))
+                    .frame(maxHeight: geometry.size.height / 4) // Set maximum height
+                
+                Spacer() // Spacer to push content to the top
+                
+                Text("Listen Now!")
+                    .font(.headline)
+                    .foregroundColor(.blue)
+                    .padding(.bottom, 230) // Add bottom padding
+                    .scaleEffect(ourPlayerManager.isPlaying ? 0.0 : 1.2) // Scale effect
+                    .animation(.easeInOut, value: ourPlayerManager.isPlaying ) // Animation type
+                // TODO - this should really move to the ContentView rather than LiveRadioTab
             }
         }
-
+    }
 }
 
 
