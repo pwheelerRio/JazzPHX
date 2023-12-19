@@ -42,117 +42,126 @@ class PlayerManager: ObservableObject {
 
 struct ContentView: View {
     @StateObject var ourPlayerManager = PlayerManager()
+    @State private var selectedTabIndex = 0
     
 //    @State private var isPlaying = false
 //    @State private var iconAnimate = false
     
     var body: some View {
-        TabView {
-            LiveRadioTab()
-//                .environmentObject(ourPlayerManager)
-                .tabItem {
-                    Image(systemName: "music.note.list")
-//                        .symbolEffect(.bounce, value: iconAnimate  )
-//                        .onTapGesture {
-//                            iconAnimate.toggle()
-//                        }
+        ZStack {
+            TabView {
+                LiveRadioTab()
+                    .tag(0)
+                    .tabItem {
+                        Image(systemName: "music.note.list")
+                        //                        .symbolEffect(.bounce, value: iconAnimate  )
+                        //                        .onTapGesture {
+                        //                            iconAnimate.toggle()
+                        //                        }
                         // this does not appear to do anything.
-                    // TODO - how do I animate these?
-//                        .foregroundColor(Color(red: 1, green: 0.0, blue: 0.82, opacity: 1.0))
-                    
-                    Text("Jazz Radio")
-                }
-               
+                        // TODO - how do I animate these?
+                        //                        .foregroundColor(Color(red: 1, green: 0.0, blue: 0.82, opacity: 1.0))
+                        Text("Jazz Radio")
+                    }
+                    .onAppear(perform: {
+                        selectedTabIndex = 0
+                        print(selectedTabIndex)
+                    })
+                
+                JazzEventsTab()
+                    .tag(1)
+                    .tabItem {
+                        Image(systemName: "music.mic")
+                        Text("Live Music Scene")
+                    }
+                    .onAppear(perform: {
+                        selectedTabIndex = 1
+                        print(selectedTabIndex)
+                    })
+                
+                SupportTab ()
+                    .tag(2)
+                    .tabItem {
+                        Image(systemName: "radio")
+                        Text("Support KJZZ")
+                    }
+                    .onAppear(perform: {
+                        selectedTabIndex = 2
+                        print(selectedTabIndex)
+                    })
+            }
+            .environmentObject(ourPlayerManager)
+            // needs to be here to be accessible to all of the children of the TabView.
             
-            JazzEventsTab()
-                .tabItem {
-                    Image(systemName: "music.mic")
-//                        .foregroundColor(Color(red: 0.15, green: 0.0, blue: 0.82, opacity: 1.0))
-                    Text("Live Music Scene")
-                }
-            
-            SupportTab ()
-                .tabItem {
-                    Image(systemName: "radio")
-//                        .foregroundColor(Color(red: 0.15, green: 0.62, blue: 0.82, opacity: 1.0))
-                    Text("Support KJZZ")
-                }
+            PlayPauseButton()
+                .environmentObject(ourPlayerManager)
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .offset(x: selectedTabIndex == 1 ? -100 : (selectedTabIndex == 2 ? 130 : 0), y: selectedTabIndex == 0 ? -210 : -40)
+                .animation(.easeInOut, value: selectedTabIndex)
+            // This is a demonstration of movement and animation in response to tabIndex.
         }
         .onAppear {
             ourPlayerManager.setupPlayer()
         }
-        .environmentObject(ourPlayerManager)
-        // needs to be here to be accessible to all of the children of the TabView
+    }
+}
+
+struct PlayPauseButton: View {
+    @EnvironmentObject var ourPlayerManager: PlayerManager
+    
+    var body: some View {
+        Button(action: {
+            ourPlayerManager.togglePlayPause()
+        }) {
+            Image(systemName: ourPlayerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                .font(.system(size: 100))
+//              .foregroundColor(isPlaying ? .red : .blue)
+                .foregroundColor(Color(red: 0.15, green: 0.62, blue: 0.82, opacity: 1.0))
+        }
+        .symbolEffect(.bounce, value: ourPlayerManager.isPlaying)
     }
 }
 
 struct LiveRadioTab: View {
     @EnvironmentObject var ourPlayerManager: PlayerManager
-    
-//    @State private var isPlaying = false
-//    print("struct declared")
+    @State private var isListening = false
     
     var body: some View {
-        VStack {
-//            Text("Jazz PHX")
-//                .font(.title)
-//                .padding()
-//            
-            HStack {
-                Spacer()
-                    .frame(width: 40)
-                Image("KJZZ_HD2")
-                    .resizable()
-                    .scaledToFit()
-                Image("JazzPHX")
-                    .resizable()
-                    .scaledToFit()
-                Spacer()
-                    .frame(width: 40)
-            }
-            Button(action: {
-                ourPlayerManager.togglePlayPause()
-                
-//                print("Button Action")
-            }) {
-                Image(systemName: ourPlayerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.system(size: 100))
-//                    .foregroundColor(isPlaying ? .red : .blue)
-                    .foregroundColor(Color(red: 0.15, green: 0.62, blue: 0.82, opacity: 1.0))
-                // TODO - should be able to animate the play button too
-            }
-            .padding()
-            .symbolEffect(.bounce, value: ourPlayerManager.isPlaying)
-        }
-//        .onAppear {
-//            print("onAppear")
-//            print("Checking rate \(String(describing: streamPlayer?.rate))")
-//            if (streamPlayer?.rate == nil || streamPlayer?.rate == 0.0) {
-//                print("rate check is true")
-//                setupStreamPlayer()
-                // setup used to be called outside of this IF which resulted in setup being called every time user returned to this tab, which would stop an already-playing stream
+            GeometryReader { geometry in
+                VStack {
+                    HStack {
+                        Spacer()
+                            .frame(width: 40)
+                        Image("KJZZ_HD2")
+                            .resizable()
+                            .scaledToFit()
+                        Image("JazzPHX")
+                            .resizable()
+                            .scaledToFit()
+                        Spacer()
+                            .frame(width: 40)
+                    }
+                    
+                    Text("This is only placeholder text meant to represent the Teaser information from the website promoting upcoming programming content, and/or Now Playing Information/Artwork. Moving forward, the logos and play button will be pulled out of zSpace and floated 'above' this content.")
+                        .font(.title)
+                        .padding()
+                        .frame(maxHeight: geometry.size.height / 4) // Set maximum height
+                    
+                    Spacer() // Spacer to push content to the top
+                    
+                    Text("Listen Now!")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                        .padding(.bottom, 320) // Add bottom padding
+                        .scaleEffect(ourPlayerManager.isPlaying ? 0.0 : 1.0) // Scale effect
+                        .animation(.easeInOut, value: ourPlayerManager.isPlaying ) // Animation type
+                }
             }
         }
-//        .onChange(of: isPlaying) {
-//            if isPlaying {
-////                print("Play change")
-//                streamPlayer?.play()
-//            } else {
-////                print("Stop change")
-//                streamPlayer?.pause()
-//            }
-//        }
 
-    
-//    func setupStreamPlayer() {
-//        do {
-//            try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback)
-//            streamPlayer = AVPlayer(url: jazzStreamURL)
-////            print("setup called")
-//        } catch {
-//            print("Error setting up audio session")
-//        }
-//    }
+}
+
 
 
 struct JazzEventsTab: View {
@@ -162,21 +171,22 @@ struct JazzEventsTab: View {
             Text("Tab would display information about local live music scene/events")
                 .font(.title)
                 .padding()
-            Button(action: {
-                ourPlayerManager.togglePlayPause()
-//                print("Button Action")
-//                print(ourPlayerManager.isPlaying)
-            }) {
-                Image(systemName: ourPlayerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.system(size: 100))
-//                    .foregroundColor(isPlaying ? .red : .blue)
-                    .foregroundColor(Color(red: 0.15, green: 0.62, blue: 0.82, opacity: 1.0))
-                // TODO - should be able to animate the play button too
-            }
-            .padding()
-            .symbolEffect(.bounce, value: ourPlayerManager.isPlaying)
+//            Button(action: {
+//                ourPlayerManager.togglePlayPause()
+////                print("Button Action")
+////                print(ourPlayerManager.isPlaying)
+//            }) {
+//                Image(systemName: ourPlayerManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+//                    .font(.system(size: 100))
+////                    .foregroundColor(isPlaying ? .red : .blue)
+//                    .foregroundColor(Color(red: 0.15, green: 0.62, blue: 0.82, opacity: 1.0))
+//                // TODO - should be able to animate the play button too
+//            }
+//            .padding()
+//            .symbolEffect(.bounce, value: ourPlayerManager.isPlaying)
         }
     }
+        
 }
 
 struct SupportTab: View {
@@ -186,7 +196,11 @@ struct SupportTab: View {
                 .font(.title)
                 .padding()
         }
+//        .onAppear(perform: {
+//            print(selectedTabIndex)
+//        })
     }
+     
 }
 
 // part of tutorial
